@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGSRTC Public Survey</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-color: #0056b3; 
+            --border-color: #d1d5db;
+            --bg-hover: #f3f4f6;
+            --bg-selected: #ebf5ff;
+            --saffron-light: rgba(255, 153, 51, 0.85);
+            --green-light: rgba(19, 136, 8, 0.85);
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--saffron-light) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,1) 70%, var(--green-light) 100%);
+            background-attachment: fixed;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #555;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .survey-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        /* Info Collapsible */
+        .info-btn {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            width: 100%;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        .info-btn:hover { background-color: #e9ecef; }
+        .info-content {
+            display: none;
+            padding: 15px;
+            background-color: #fff;
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .question-block {
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-block:last-child { border-bottom: none; }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+
+        .option-box {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .option-box:hover { background-color: var(--bg-hover); }
+        .option-box input[type="radio"], .option-box input[type="checkbox"] {
+            position: absolute; opacity: 0; cursor: pointer;
+        }
+        .option-box.selected {
+            border-color: var(--primary-color);
+            background-color: var(--bg-selected);
+        }
+        .option-box i {
+            margin-right: 12px; font-size: 1.2rem; color: #555; width: 20px; text-align: center;
+        }
+        .option-box.selected i { color: var(--primary-color); }
+
+        .hidden-input { display: none; width: 100%; margin-top: 10px; grid-column: 1 / -1; }
+        .hidden-input.active { display: block; }
+
+        input[type="text"], input[type="number"], textarea {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        textarea { resize: vertical; min-height: 100px; width: 100%; box-sizing: border-box; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary-color); }
+
+        /* Likert */
+        .likert-container { padding: 20px 0; }
+        .range-slider { width: 100%; margin: 10px 0; background: #e0e0e0; height: 8px; border-radius: 4px; outline: none; }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%;
+            background: #f1c40f; cursor: pointer; transition: background 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .likert-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: #666; margin-top: 10px; }
+        .satisfaction-text { text-align: center; font-weight: bold; margin-top: 15px; font-size: 1.1rem; color: #f1c40f; }
+
+        /* Dual Slider for Q13 */
+        .dual-slider-container {
+            position: relative; width: 100%; padding-top: 20px; padding-bottom: 30px;
+        }
+        .slider-track {
+            width: 100%; height: 8px; background: #e0e0e0; position: absolute; margin: auto;
+            top: 0; bottom: 0; border-radius: 4px;
+        }
+        .slider-fill {
+            height: 8px; background: var(--primary-color); position: absolute; margin: auto;
+            top: 0; bottom: 0; border-radius: 4px; z-index: 1;
+        }
+        .dual-slider-container input[type="range"] {
+            -webkit-appearance: none; appearance: none; width: 100%; position: absolute; margin: auto;
+            top: 0; bottom: 0; background: transparent; pointer-events: none; z-index: 2;
+        }
+        .dual-slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; height: 24px; width: 24px; background: white;
+            border: 3px solid var(--primary-color); border-radius: 50%; pointer-events: auto;
+            cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .price-display {
+            text-align: center; font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 10px;
+        }
+
+        .max-alert { color: #e74c3c; font-size: 0.85rem; margin-top: 8px; display: none; }
+
+        /* Navigation Buttons */
+        .page-indicator { text-align: center; color: #777; font-size: 0.9rem; margin-top: 20px; margin-bottom: 10px; }
+        .btn-container { display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;}
+        .btn-container.single { justify-content: flex-end; }
+        
+        .btn {
+            padding: 12px 30px; font-size: 1rem; font-weight: 600; border-radius: 6px; cursor: pointer;
+            transition: background 0.2s, transform 0.1s; border: none;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-next, .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-next:hover, .btn-submit:hover { background-color: #004494; }
+        .btn-submit { background-color: var(--success-color); }
+        .btn-submit:hover { background-color: #219653; }
+        .btn-prev { background-color: #f1f3f5; color: #333; }
+        .btn-prev:hover { background-color: #e2e6ea; }
+
+        /* Custom Validation Popup */
+        .custom-popup-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .custom-popup {
+            background: white; padding: 25px 35px; border-radius: 10px; text-align: center;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.15); max-width: 400px;
+        }
+        .custom-popup i { font-size: 3rem; color: #f39c12; margin-bottom: 15px; }
+        .custom-popup h3 { margin: 0 0 10px; color: #333; }
+        .custom-popup button {
+            margin-top: 20px; padding: 10px 25px; background: var(--primary-color);
+            color: white; border: none; border-radius: 5px; cursor: pointer;
+        }
+
+        /* Success Screen */
+        .success-screen { display: none; text-align: center; padding: 50px 20px; }
+        .success-screen i { font-size: 5rem; color: var(--success-color); margin-bottom: 20px; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .success-screen h1 { color: #333; margin-bottom: 10px; }
+        .success-screen p { color: #666; font-size: 1.1rem; }
+        
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* Footer */
+        footer {
+            background-color: rgba(255,255,255,0.9); text-align: center; padding: 15px;
+            font-size: 0.85rem; color: #555; border-top: 1px solid #ddd; margin-top: auto;
+        }
+        .error-border { border: 2px solid #e74c3c !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="https://upload.wikimedia.org/wikipedia/en/7/77/Telangana_State_Road_Transport_Corporation_logo.png" alt="TGSRTC Logo" style="height: 40px; width: auto;">
+            <span>TGSRTC</span>
+        </div>
+        <div class="header-title">PUBLIC SURVEY</div>
+    </header>
+
+    <div class="custom-popup-overlay" id="validation-popup">
+        <div class="custom-popup">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <h3>Missing Information</h3>
+            <p>Please kindly respond to all required questions before proceeding.</p>
+            <button onclick="document.getElementById('validation-popup').style.display='none'">Okay</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <form id="tgsrtc-survey">
+            
+            <div id="page-1" class="survey-card">
+                <h2 class="section-title">About You and Your Daily Commute</h2>
+
+                <div class="question-block req-block" data-qname="q1">
+                    <div class="question-text">1. Please indicate your age group:</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q1" value="Below 25"> Below 25 years</label>
+                        <label class="option-box"><input type="radio" name="q1" value="25-34"> 25–34 years</label>
+                        <label class="option-box"><input type="radio" name="q1" value="35-44"> 35–44 years</label>
+                        <label class="option-box"><input type="radio" name="q1" value="45-54"> 45–54 years</label>
+                        <label class="option-box"><input type="radio" name="q1" value="55+"> 55 years and above</label>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q2">
+                    <div class="question-text">2. Which of the following best describes your current profession?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q2" value="Private sector"> Private sector employee</label>
+                        <label class="option-box"><input type="radio" name="q2" value="Public sector"> Public sector / Government employee</label>
+                        <label class="option-box"><input type="radio" name="q2" value="Self-employed"> Self-employed / Business owner</label>
+                        <label class="option-box"><input type="radio" name="q2" value="Freelancer"> Freelancer / Contract-based</label>
+                        <label class="option-box"><input type="radio" name="q2" value="Student"> Student / Internship</label>
+                        <label class="option-box"><input type="radio" name="q2" value="Other"> Other</label>
+                        <div class="hidden-input" id="q2-other-input">
+                            <input type="text" placeholder="Please specify your profession..." id="q2-text">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q3">
+                    <div class="question-text">3. What is your approximate <strong>ONE-WAY</strong> daily commute distance?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q3" value="<5"> Less than 5 km</label>
+                        <label class="option-box"><input type="radio" name="q3" value="5-10"> 5–10 km</label>
+                        <label class="option-box"><input type="radio" name="q3" value="11-20"> 11–20 km</label>
+                        <label class="option-box"><input type="radio" name="q3" value="21-30"> 21–30 km</label>
+                        <label class="option-box"><input type="radio" name="q3" value=">30"> More than 30 km</label>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q4">
+                    <div class="question-text">4. What is your primary mode of daily commute?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q4" value="Public Bus"><i class="fa-solid fa-bus"></i> Public bus</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Private Bus"><i class="fa-solid fa-bus-simple"></i> Private bus / company transport</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Metro"><i class="fa-solid fa-train-subway"></i> Metro / suburban train</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Two-wheeler"><i class="fa-solid fa-motorcycle"></i> Two-wheeler</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Car"><i class="fa-solid fa-car"></i> Car (self-driven)</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Carpool"><i class="fa-solid fa-car-side"></i> Carpool / ride services</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Auto"><i class="fa-solid fa-taxi"></i> Auto-rickshaw / taxi</label>
+                        <label class="option-box"><input type="radio" name="q4" value="Combination"><i class="fa-solid fa-route"></i> Combination</label>
+                    </div>
+                </div>
+
+                <div class="question-block">
+                    <div class="question-text">5. Overall, how satisfied are you with your current mode of daily commute?</div>
+                    <div class="likert-container">
+                        <input type="range" class="range-slider" id="q5-slider" name="q5" min="1" max="5" value="3" step="1">
+                        <div class="likert-labels"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                        <div class="satisfaction-text" id="q5-text">Neither satisfied nor dissatisfied</div>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q6">
+                    <div class="question-text">6. What are the major issues you face in your current mode of commute? <br><small style="color: #666; font-weight: normal;">(Select up to 3 options)</small></div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="checkbox" name="q6" value="Overcrowding"> Overcrowding</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Long travel time"> Long travel time</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Unreliable schedules"> Unreliable schedules / delays</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Lack of comfort"> Lack of comfort</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Safety concerns"> Safety concerns</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="High cost"> High cost of travel</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Poor connectivity"> Poor connectivity / last-mile issues</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Stress"> Stress and fatigue</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="No issues"> No major issues</label>
+                        <label class="option-box"><input type="checkbox" name="q6" value="Other"> Other</label>
+                        <div class="hidden-input" id="q6-other-input">
+                            <input type="text" placeholder="Please specify major issues..." id="q6-text">
+                        </div>
+                    </div>
+                    <div class="max-alert" id="q6-alert">You can only select up to 3 options.</div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q7">
+                    <div class="question-text">7. How many days per week do you typically travel for work?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q7" value="1-2 days"> 1–2 days per week</label>
+                        <label class="option-box"><input type="radio" name="q7" value="3-4 days"> 3–4 days per week</label>
+                        <label class="option-box"><input type="radio" name="q7" value="5 days"> 5 days per week</label>
+                        <label class="option-box"><input type="radio" name="q7" value=">5 days"> More than 5 days per week</label>
+                        <label class="option-box"><input type="radio" name="q7" value="WFH"> Work from home / No regular commute</label>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q8">
+                    <div class="question-text">8. Approximately how much do you spend per month on your daily commute?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q8" value="<1000"> Less than ₹1,000</label>
+                        <label class="option-box"><input type="radio" name="q8" value="1000-2000"> ₹1,000 – ₹2,000</label>
+                        <label class="option-box"><input type="radio" name="q8" value="2001-4000"> ₹2,001 – ₹4,000</label>
+                        <label class="option-box"><input type="radio" name="q8" value="4001-6000"> ₹4,001 – ₹6,000</label>
+                        <label class="option-box"><input type="radio" name="q8" value=">6000"> More than ₹6,000</label>
+                        <label class="option-box"><input type="radio" name="q8" value="Exact"> Prefer to specify exact amount</label>
+                        <div class="hidden-input" id="q8-exact-input">
+                            <input type="number" placeholder="Enter amount in ₹" id="q8-text">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-indicator">Page 1 of 2</div>
+                <div class="btn-container single">
+                    <button type="button" class="btn btn-next" id="btnNext">Next Section</button>
+                </div>
+            </div>
+            
+            <div id="page-2" class="survey-card" style="display: none;">
+                <h2 class="section-title">Your Views on Premium Daily Commute Services</h2>
+
+                <button type="button" class="info-btn" id="infoToggle">
+                    <span><i class="fa-solid fa-circle-info" style="margin-right:8px;"></i> What is a Premium Commuting Service?</span>
+                    <i class="fa-solid fa-chevron-down" id="infoIcon"></i>
+                </button>
+                <div class="info-content" id="infoDesc">
+                    A premium daily commute service refers to a pre-booked, reservation-based bus service designed for regular home-to-office travel. Such services typically offer assured seating, fixed schedules, improved comfort (such as air-conditioning and better seating), and digital features like online booking and real-time tracking. These services usually operate at a slightly higher price compared to regular public bus services.
+                </div>
+
+                <div class="question-block req-block" data-qname="q9">
+                    <div class="question-text">9. Prior to this survey, were you aware of premium, reservation-based daily commute services operating in urban areas?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q9" value="Yes"> Yes</label>
+                        <label class="option-box"><input type="radio" name="q9" value="No"> No</label>
+                    </div>
+                </div>
+
+                <div class="question-block">
+                    <div class="question-text">10. If <strong>TGSRTC</strong> were to introduce a pre-booked, seat-assured, comfortable, home-to-office daily commute service, how likely would you be to consider using it?</div>
+                    <div class="likert-container">
+                        <input type="range" class="range-slider" id="q10-slider" name="q10" min="1" max="5" value="3" step="1">
+                        <div class="likert-labels"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+                        <div class="satisfaction-text" id="q10-text">Neutral</div>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q11">
+                    <div class="question-text">11. Which of the following features would encourage you to consider such a premium commute service?<br><small style="color: #666; font-weight: normal;">(Select up to 5 options)</small></div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="checkbox" name="q11" value="Assured seating"><i class="fa-solid fa-chair"></i> Assured seating</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Fixed schedule"><i class="fa-solid fa-clock"></i> Fixed & reliable schedule</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Real-time tracking"><i class="fa-solid fa-location-dot"></i> Real-time tracking</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Doorstep pickup"><i class="fa-solid fa-house"></i> Doorstep pickup / drop</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Comfortable seating"><i class="fa-solid fa-couch"></i> Comfort & legroom</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Air-conditioning"><i class="fa-solid fa-snowflake"></i> Air-conditioning</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Onboard Wi-Fi"><i class="fa-solid fa-wifi"></i> Onboard Wi-Fi</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Subscriptions"><i class="fa-solid fa-calendar-check"></i> Monthly subscriptions</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Digital ticketing"><i class="fa-solid fa-mobile-screen"></i> Digital ticketing</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Customer support"><i class="fa-solid fa-headset"></i> Dedicated support</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Route coverage"><i class="fa-solid fa-map"></i> Limited route coverage</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Safety features"><i class="fa-solid fa-shield-halved"></i> Enhanced safety</label>
+                        <label class="option-box"><input type="checkbox" name="q11" value="Other"><i class="fa-solid fa-pen"></i> Other</label>
+                        <div class="hidden-input" id="q11-other-input">
+                            <input type="text" placeholder="Please specify other features..." id="q11-text">
+                        </div>
+                    </div>
+                    <div class="max-alert" id="q11-alert">You can only select up to 5 options.</div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q12">
+                    <div class="question-text">12. Would you be willing to pay a premium over your current commute cost for such a service?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q12" value="Up to 10%"> Up to 10% more</label>
+                        <label class="option-box"><input type="radio" name="q12" value="11-20%"> 11–20% more</label>
+                        <label class="option-box"><input type="radio" name="q12" value="21-30%"> 21–30% more</label>
+                        <label class="option-box"><input type="radio" name="q12" value="31-40%"> 31–40% more</label>
+                        <label class="option-box"><input type="radio" name="q12" value=">40%"> More than 40%</label>
+                        <label class="option-box"><input type="radio" name="q12" value="No"> No (Not willing to pay extra)</label>
+                        <div class="hidden-input" id="q12-no-input">
+                            <input type="text" placeholder="Please briefly state why..." id="q12-text">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="question-block">
+                    <div class="question-text">13. What is your comfortable price range for a <strong>ONE-WAY</strong> premium commute? (₹100 - ₹500)</div>
+                    <div class="price-display">
+                        <span id="price-min-display">₹150</span> - <span id="price-max-display">₹350</span>
+                    </div>
+                    <div class="dual-slider-container">
+                        <div class="slider-track"></div>
+                        <div class="slider-fill" id="slider-color"></div>
+                        <input type="range" id="price-min" min="100" max="500" value="150" step="10">
+                        <input type="range" id="price-max" min="100" max="500" value="350" step="10">
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q14">
+                    <div class="question-text">14. What would be your preferred payment option for such a service?</div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="radio" name="q14" value="Subscription"> Subscription (Weekly/Monthly)</label>
+                        <label class="option-box"><input type="radio" name="q14" value="Pay-per-ride"> Pay-per-ride</label>
+                        <label class="option-box"><input type="radio" name="q14" value="Corporate"> Corporate-sponsored</label>
+                        <label class="option-box"><input type="radio" name="q14" value="UPI"> Digital wallet / UPI</label>
+                        <label class="option-box"><input type="radio" name="q14" value="Doesn't matter"> Doesn’t matter</label>
+                    </div>
+                </div>
+
+                <div class="question-block req-block" data-qname="q15">
+                    <div class="question-text">15. What factors might prevent you from using such a premium daily commute service? <br><small style="color: #666; font-weight: normal;">(Select up to 3 options)</small></div>
+                    <div class="options-grid">
+                        <label class="option-box"><input type="checkbox" name="q15" value="Higher cost"> Higher cost</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Inflexible timings"> Inflexible pickup/drop timings</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Limited route"> Limited route coverage</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Personal vehicle preference"> Preference for personal vehicle</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Privacy"> Privacy concerns</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Reliability"> Reliability concerns</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Habit"> Habitual preference for current mode</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Location misalignment"> Employer location not aligned</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="No barriers"> No significant barriers</label>
+                        <label class="option-box"><input type="checkbox" name="q15" value="Other"> Other</label>
+                        <div class="hidden-input" id="q15-other-input">
+                            <input type="text" placeholder="Please specify preventing factors..." id="q15-text">
+                        </div>
+                    </div>
+                    <div class="max-alert" id="q15-alert">You can only select up to 3 options.</div>
+                </div>
+
+                <div class="question-block">
+                    <div class="question-text">16. In your opinion, what improvements or additional features would make a premium daily commute service more attractive to you? <span style="font-weight:normal; color:#888;">(Optional)</span></div>
+                    <textarea name="q16" placeholder="Type your suggestions here..."></textarea>
+                </div>
+
+                <div class="page-indicator">Page 2 of 2</div>
+                <div class="btn-container">
+                    <button type="button" class="btn btn-prev" id="btnPrev">Previous</button>
+                    <button type="button" class="btn btn-submit" id="btnSubmit">Submit Survey</button>
+                </div>
+            </div>
+
+            <div id="success-view" class="survey-card success-screen">
+                <i class="fa-solid fa-circle-check"></i>
+                <h1>Thank You!</h1>
+                <p>Your response has been successfully recorded. Your feedback will help TGSRTC build better commuting experiences for everyone.</p>
+            </div>
+
+        </form>
+    </div>
+
+    <footer>
+        Conducted by, Telangana State Road Transport Corporation (TGSRTC)
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. GENERAL VISUALS & LOGIC ---
+            const allInputs = document.querySelectorAll('.option-box input');
+            allInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const name = this.name;
+                    if (this.type === 'radio') {
+                        document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                            radio.parentElement.classList.remove('selected');
+                        });
+                        this.parentElement.classList.add('selected');
+                    } else if (this.type === 'checkbox') {
+                        this.checked ? this.parentElement.classList.add('selected') : this.parentElement.classList.remove('selected');
+                    }
+                    // Remove error border when user interacts
+                    this.closest('.req-block').classList.remove('error-border');
+                });
+            });
+
+            // Conditional Inputs (Show/Hide text boxes)
+            const setupConditional = (qName, triggerVal, containerId, isRadio = true) => {
+                const elements = document.querySelectorAll(`input[name="${qName}"]`);
+                const container = document.getElementById(containerId);
+                elements.forEach(el => {
+                    el.addEventListener('change', (e) => {
+                        if(isRadio) {
+                            if (e.target.value === triggerVal) {
+                                container.classList.add('active'); container.querySelector('input').focus();
+                            } else {
+                                container.classList.remove('active'); container.querySelector('input').value = ''; 
+                            }
+                        } else { // checkbox logic
+                            if (e.target.value === triggerVal) {
+                                e.target.checked ? container.classList.add('active') : (container.classList.remove('active'), container.querySelector('input').value = '');
+                            }
+                        }
+                    });
+                });
+            }
+
+            setupConditional('q2', 'Other', 'q2-other-input');
+            setupConditional('q8', 'Exact', 'q8-exact-input');
+            setupConditional('q12', 'No', 'q12-no-input');
+            setupConditional('q6', 'Other', 'q6-other-input', false);
+            setupConditional('q11', 'Other', 'q11-other-input', false);
+            setupConditional('q15', 'Other', 'q15-other-input', false);
+
+            // Checkbox Limiters
+            const setupMaxCheckboxes = (qName, max, alertId) => {
+                const boxes = document.querySelectorAll(`input[name="${qName}"]`);
+                const alert = document.getElementById(alertId);
+                boxes.forEach(box => {
+                    box.addEventListener('change', function() {
+                        if(document.querySelectorAll(`input[name="${qName}"]:checked`).length > max) {
+                            this.checked = false; this.parentElement.classList.remove('selected');
+                            alert.style.display = 'block'; setTimeout(() => alert.style.display = 'none', 3000);
+                        }
+                    });
+                });
+            }
+            setupMaxCheckboxes('q6', 3, 'q6-alert');
+            setupMaxCheckboxes('q11', 5, 'q11-alert');
+            setupMaxCheckboxes('q15', 3, 'q15-alert');
+
+            // --- 2. LIKERT SCALES (Q5 & Q10) ---
+            const setupLikert = (sliderId, textId, colors) => {
+                const slider = document.getElementById(sliderId);
+                const text = document.getElementById(textId);
+                slider.addEventListener('input', function() {
+                    const val = this.value; text.textContent = colors[val].t; text.style.color = colors[val].c;
+                    this.style.setProperty('--thumb-color', colors[val].c);
+                    // Inject specific dynamic style for thumb color
+                    let styleEl = document.getElementById(sliderId+'-style');
+                    if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = sliderId+'-style'; document.head.appendChild(styleEl); }
+                    styleEl.textContent = `#${sliderId}::-webkit-slider-thumb { background: ${colors[val].c} !important; }`;
+                });
+            }
+            const lData5 = { 1: {t: "Very dissatisfied", c: "#e74c3c"}, 2: {t: "Dissatisfied", c: "#e67e22"}, 3: {t: "Neither", c: "#f1c40f"}, 4: {t: "Satisfied", c: "#2ecc71"}, 5: {t: "Very satisfied", c: "#27ae60"} };
+            const lData10 = { 1: {t: "Very unlikely", c: "#e74c3c"}, 2: {t: "Unlikely", c: "#e67e22"}, 3: {t: "Neutral", c: "#f1c40f"}, 4: {t: "Likely", c: "#2ecc71"}, 5: {t: "Very likely", c: "#27ae60"} };
+            setupLikert('q5-slider', 'q5-text', lData5);
+            setupLikert('q10-slider', 'q10-text', lData10);
+
+            // --- 3. DUAL RANGE SLIDER (Q13) ---
+            const sliderMin = document.getElementById("price-min");
+            const sliderMax = document.getElementById("price-max");
+            const minDisp = document.getElementById("price-min-display");
+            const maxDisp = document.getElementById("price-max-display");
+            const fill = document.getElementById("slider-color");
+
+            function updateDualSlider() {
+                let val1 = parseInt(sliderMin.value); let val2 = parseInt(sliderMax.value);
+                if(val1 > val2) { let tmp = val1; val1 = val2; val2 = tmp; }
+                minDisp.textContent = "₹" + val1; maxDisp.textContent = "₹" + val2;
+                const percent1 = ((val1 - 100) / 400) * 100; const percent2 = ((val2 - 100) / 400) * 100;
+                fill.style.left = percent1 + "%"; fill.style.width = (percent2 - percent1) + "%";
+            }
+            sliderMin.addEventListener("input", updateDualSlider);
+            sliderMax.addEventListener("input", updateDualSlider);
+            updateDualSlider(); // Init
+
+            // --- 4. COLLAPSIBLE INFO ---
+            document.getElementById('infoToggle').addEventListener('click', function() {
+                const content = document.getElementById('infoDesc');
+                const icon = document.getElementById('infoIcon');
+                if(content.style.display === 'block') {
+                    content.style.display = 'none'; icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                } else {
+                    content.style.display = 'block'; icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                }
+            });
+
+            // --- 5. VALIDATION & NAVIGATION ---
+            function validateSection(pageId) {
+                let isValid = true;
+                const reqBlocks = document.querySelectorAll(`#${pageId} .req-block`);
+                
+                reqBlocks.forEach(block => {
+                    const qName = block.getAttribute('data-qname');
+                    const inputs = block.querySelectorAll(`input[name="${qName}"]`);
+                    let answered = false;
+
+                    // Check if at least one radio/checkbox is checked
+                    inputs.forEach(input => { if(input.checked) answered = true; });
+
+                    // Check conditional text inputs if active
+                    const textInputDiv = block.querySelector('.hidden-input');
+                    if(textInputDiv && textInputDiv.classList.contains('active')) {
+                        const txtField = textInputDiv.querySelector('input');
+                        if(txtField.value.trim() === '') answered = false;
+                    }
+
+                    if(!answered) {
+                        block.classList.add('error-border');
+                        isValid = false;
+                    } else {
+                        block.classList.remove('error-border');
+                    }
+                });
+
+                if(!isValid) document.getElementById('validation-popup').style.display = 'flex';
+                return isValid;
+            }
+
+            // Remove error styling on text input typing
+            document.querySelectorAll('.hidden-input input').forEach(inp => {
+                inp.addEventListener('input', function() {
+                    if(this.value.trim() !== '') this.closest('.req-block').classList.remove('error-border');
+                })
+            });
+
+            document.getElementById('btnNext').addEventListener('click', () => {
+                if(validateSection('page-1')) {
+                    document.getElementById('page-1').style.display = 'none';
+                    document.getElementById('page-2').style.display = 'block';
+                    window.scrollTo(0, 0);
+                }
+            });
+
+            document.getElementById('btnPrev').addEventListener('click', () => {
+                document.getElementById('page-2').style.display = 'none';
+                document.getElementById('page-1').style.display = 'block';
+                window.scrollTo(0, 0);
+            });
+
+            document.getElementById('btnSubmit').addEventListener('click', () => {
+                if(validateSection('page-2')) {
+                    // Show success screen (Here is where Firebase logic will go)
+                    document.getElementById('page-2').style.display = 'none';
+                    document.getElementById('success-view').style.display = 'block';
+                    window.scrollTo(0, 0);
+                }
+            });
+
+            // --- 6. SUBMIT TO GOOGLE SHEETS ---
+            document.getElementById('btnSubmit').addEventListener('click', async function() {
+                if(validateSection('page-2')) {
+                    
+                    // 1. Change button text to show it's working
+                    const submitBtn = this;
+                    const originalText = submitBtn.innerText;
+                    submitBtn.innerText = "Submitting...";
+                    submitBtn.disabled = true;
+
+                    // 2. Helper function to get radio values (and their text boxes if applicable)
+                    const getRadioValue = (qName, textInputId) => {
+                        const selected = document.querySelector(`input[name="${qName}"]:checked`);
+                        if (!selected) return "";
+                        let val = selected.value;
+                        
+                        // If they selected an option that reveals a text box, grab that text
+                        if (textInputId && (val === "Other" || val === "Exact" || val === "No")) {
+                            const textVal = document.getElementById(textInputId).value.trim();
+                            if (val === "Exact") return "₹" + textVal;
+                            if (val === "No" && textVal) return "No: " + textVal;
+                            if (val === "Other" && textVal) return textVal;
+                        }
+                        return val;
+                    };
+
+                    // 3. Helper function to get checkbox values as a comma-separated string
+                    const getCheckboxValues = (qName, textInputId) => {
+                        const checkedBoxes = document.querySelectorAll(`input[name="${qName}"]:checked`);
+                        let values = [];
+                        checkedBoxes.forEach(box => {
+                            if (box.value === "Other" && textInputId) {
+                                const textVal = document.getElementById(textInputId).value.trim();
+                                if (textVal) values.push(textVal); // Push the custom text instead of the word "Other"
+                            } else {
+                                values.push(box.value);
+                            }
+                        });
+                        return values.join(", "); // Joins them nicely: "Option 1, Option 2"
+                    };
+
+                    // 4. Construct the payload matching your EXACT Google Sheet column headers
+                    const minPrice = document.getElementById('price-min').value;
+                    const maxPrice = document.getElementById('price-max').value;
+                    
+                    const payload = {
+                        "time_stamp": new Date().toLocaleString(), // Generates current date and time
+                        "age": getRadioValue("q1"),
+                        "prof": getRadioValue("q2", "q2-text"),
+                        "dist": getRadioValue("q3"),
+                        "mode": getRadioValue("q4"),
+                        "mode_satisfaction": document.getElementById("q5-slider").value,
+                        "mode_issues": getCheckboxValues("q6", "q6-text"),
+                        "days_in_week": getRadioValue("q7"),
+                        "spending": getRadioValue("q8", "q8-text"),
+                        "awareness": getRadioValue("q9"),
+                        "consideration_scale": document.getElementById("q10-slider").value,
+                        "consideration_features": getCheckboxValues("q11", "q11-text"),
+                        "willingness": getRadioValue("q12", "q12-text"),
+                        "range": `₹${Math.min(minPrice, maxPrice)} - ₹${Math.max(minPrice, maxPrice)}`,
+                        "payment": getRadioValue("q14"),
+                        "preventions": getCheckboxValues("q15", "q15-text"),
+                        "suggestions": document.querySelector("textarea[name='q16']").value.trim()
+                    };
+
+                    // 5. Send data to your Google Apps Script URL
+                    const scriptURL = 'https://script.google.com/macros/s/AKfycbymME7Ga-NsWM-lydgi5_Nk9FywcmtG87YodYnhupWb2mjsq97tEMtAVkb4q9nZnNAu/exec';
+                    
+                    try {
+                        await fetch(scriptURL, {
+                            method: 'POST',
+                            mode: 'no-cors', // Bypasses browser CORS restrictions for Google Scripts
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        // 6. Show success screen
+                        document.getElementById('page-2').style.display = 'none';
+                        document.getElementById('success-view').style.display = 'block';
+                        window.scrollTo(0, 0);
+
+                    } catch (error) {
+                        console.error('Error!', error.message);
+                        alert("There was an error submitting your survey. Please try again.");
+                        submitBtn.innerText = originalText;
+                        submitBtn.disabled = false;
+                    }
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
